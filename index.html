@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🚬 사이버 흡연장</title>
+    <meta name="description" content="가상 흡연 체험 - 사이버 흡연장">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700;900&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: #0a0a0f;
+            font-family: 'Noto Sans KR', sans-serif;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            user-select: none;
+        }
+
+        /* ===== Ambient Background ===== */
+        .ambient-bg {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .ambient-bg::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, rgba(255,100,50,0.05) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            animation: ambientPulse 4s ease-in-out infinite;
+        }
+
+        @keyframes ambientPulse {
+            0%, 100% { opacity: 0.3; transform: translate(-50%, -50%) scale(1); }
+            50% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.2); }
+        }
+
+        /* ===== Title ===== */
+        .title-area {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            text-align: center;
+        }
+
+        .title-area h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ff6b35, #ff9500, #ffcc00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: 4px;
+            animation: titleGlow 3s ease-in-out infinite;
+        }
+
+        .title-area .subtitle {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.3);
+            margin-top: 4px;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+        }
+
+        @keyframes titleGlow {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.3); }
+        }
+
+        /* ===== Neon sign border ===== */
+        .neon-border {
+            position: fixed;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 1px solid rgba(255, 100, 50, 0.1);
+            border-radius: 20px;
+            pointer-events: none;
+            z-index: 1;
+            animation: neonFlicker 5s ease-in-out infinite;
+        }
+
+        @keyframes neonFlicker {
+            0%, 100% { border-color: rgba(255, 100, 50, 0.1); }
+            50% { border-color: rgba(255, 100, 50, 0.25); }
+            93% { border-color: rgba(255, 100, 50, 0.05); }
+            95% { border-color: rgba(255, 100, 50, 0.3); }
+        }
+
+        /* ===== Vertical Cigarette ===== */
+        .cigarette-wrapper {
+            position: relative;
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .cigarette {
+            position: relative;
+            width: 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            filter: drop-shadow(0 0 15px rgba(0,0,0,0.5));
+            transition: transform 0.15s ease;
+        }
+
+        /* Ember / cherry at the top */
+        .cigarette-ember {
+            width: 32px;
+            height: 8px;
+            background: radial-gradient(ellipse at center, #ff6a00 0%, #ff4500 40%, #cc2200 70%, #8b0000 100%);
+            border-radius: 4px 4px 0 0;
+            position: relative;
+            z-index: 3;
+            box-shadow: 0 -4px 15px rgba(255,100,30,0.6), 0 -2px 8px rgba(255,60,10,0.8);
+            transition: box-shadow 0.3s ease;
+        }
+
+        .cigarette-ember.active {
+            box-shadow: 0 -8px 30px rgba(255,100,30,0.9), 0 -4px 15px rgba(255,60,10,1), 0 0 40px rgba(255,80,20,0.5);
+            animation: emberBright 0.6s ease-in-out;
+        }
+
+        @keyframes emberBright {
+            0% { filter: brightness(1); }
+            50% { filter: brightness(1.8); }
+            100% { filter: brightness(1); }
+        }
+
+        /* Ash section */
+        .cigarette-ash {
+            width: 32px;
+            min-height: 0px;
+            background: linear-gradient(180deg, 
+                #888 0%, #999 10%, #777 20%, #8a8a8a 30%, 
+                #7a7a7a 50%, #8d8d8d 60%, #757575 80%, #888 100%);
+            position: relative;
+            z-index: 2;
+            transition: min-height 0.3s ease;
+            overflow: hidden;
+        }
+
+        /* Ash texture cracks */
+        .cigarette-ash::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 3px,
+                    rgba(0,0,0,0.08) 3px,
+                    rgba(0,0,0,0.08) 4px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 6px,
+                    rgba(0,0,0,0.04) 6px,
+                    rgba(0,0,0,0.04) 7px
+                );
+        }
+
+        /* Random cracks on ash */
+        .cigarette-ash::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                linear-gradient(135deg, transparent 40%, rgba(0,0,0,0.1) 41%, transparent 42%),
+                linear-gradient(-135deg, transparent 60%, rgba(0,0,0,0.08) 61%, transparent 62%),
+                linear-gradient(45deg, transparent 30%, rgba(100,100,100,0.1) 31%, transparent 32%);
+        }
+
+        /* Burn line between ash and paper */
+        .cigarette-burn-line {
+            width: 32px;
+            height: 3px;
+            background: linear-gradient(180deg, #5a4a30, #3a2a15, #6b5530);
+            z-index: 2;
+        }
+
+        /* White paper section */
+        .cigarette-paper {
+            width: 32px;
+            background: linear-gradient(90deg, #e8e0d8, #f5f0eb, #ebe5de, #f2ede8, #e5ddd5);
+            position: relative;
+            z-index: 2;
+            transition: height 0.3s ease;
+            overflow: hidden;
+        }
+
+        /* Paper texture lines */
+        .cigarette-paper::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.02) 2px,
+                rgba(0,0,0,0.02) 3px
+            );
+        }
+
+        /* Brand ring on paper */
+        .cigarette-brand-ring {
+            position: absolute;
+            bottom: 8px;
+            left: 0; right: 0;
+            height: 12px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(180,160,120,0.15) 20%, 
+                rgba(200,180,140,0.25) 50%, 
+                rgba(180,160,120,0.15) 80%, 
+                transparent 100%
+            );
+            border-top: 1px solid rgba(180,160,120,0.2);
+            border-bottom: 1px solid rgba(180,160,120,0.2);
+        }
+
+        /* Filter section */
+        .cigarette-filter {
+            width: 32px;
+            height: 55px;
+            background: linear-gradient(90deg, #c4944a, #d4a85a, #c89848, #dbb568, #c4944a);
+            border-radius: 0 0 3px 3px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Filter texture pattern */
+        .cigarette-filter::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 1.5px,
+                rgba(0,0,0,0.05) 1.5px,
+                rgba(0,0,0,0.05) 2px
+            );
+            border-radius: 0 0 3px 3px;
+        }
+
+        /* Filter cork dots */
+        .cigarette-filter::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: 
+                radial-gradient(circle 0.5px at 5px 5px, rgba(139,90,43,0.3) 50%, transparent 50%),
+                radial-gradient(circle 0.5px at 15px 12px, rgba(139,90,43,0.2) 50%, transparent 50%),
+                radial-gradient(circle 0.5px at 25px 8px, rgba(139,90,43,0.3) 50%, transparent 50%),
+                radial-gradient(circle 0.5px at 10px 20px, rgba(139,90,43,0.2) 50%, transparent 50%),
+                radial-gradient(circle 0.5px at 20px 28px, rgba(139,90,43,0.3) 50%, transparent 50%),
+                radial-gradient(circle 0.5px at 8px 35px, rgba(139,90,43,0.2) 50%, transparent 50%),
+                radial-gradient(circle 0.5px at 22px 42px, rgba(139,90,43,0.3) 50%, transparent 50%);
+            border-radius: 0 0 3px 3px;
+        }
+
+        /* Filter-paper divider line */
+        .cigarette-filter-line {
+            width: 32px;
+            height: 2px;
+            background: linear-gradient(90deg, #a07838, #b8963e, #a07838);
+            z-index: 2;
+        }
+
+        /* ===== Smoke Canvas ===== */
+        #smokeCanvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 6;
+        }
+
+        /* ===== Ash Particles Canvas ===== */
+        #ashCanvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+            z-index: 6;
+        }
+
+        /* ===== Controls ===== */
+        .controls {
+            display: flex;
+            gap: 16px;
+            z-index: 10;
+            position: fixed;
+            bottom: 60px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 50px;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            letter-spacing: 1px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 0; height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.6s ease, height 0.6s ease;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-smoke {
+            background: linear-gradient(135deg, #ff6b35, #ff4500);
+            color: #fff;
+            box-shadow: 0 4px 25px rgba(255, 107, 53, 0.4);
+        }
+
+        .btn-smoke:hover {
+            box-shadow: 0 6px 35px rgba(255, 107, 53, 0.6);
+            transform: translateY(-2px);
+        }
+
+        .btn-smoke.active {
+            animation: smokingPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes smokingPulse {
+            0%, 100% { box-shadow: 0 4px 25px rgba(255, 107, 53, 0.4); }
+            50% { box-shadow: 0 4px 50px rgba(255, 107, 53, 0.8); }
+        }
+
+        .btn-ash {
+            background: linear-gradient(135deg, #666, #444);
+            color: #ddd;
+            box-shadow: 0 4px 20px rgba(100, 100, 100, 0.3);
+        }
+
+        .btn-ash:hover {
+            background: linear-gradient(135deg, #888, #555);
+            box-shadow: 0 6px 30px rgba(150, 150, 150, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: rgba(255,255,255,0.7);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-reset:hover {
+            border-color: rgba(255,255,255,0.3);
+            color: #fff;
+            box-shadow: 0 6px 30px rgba(0, 0, 0, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* ===== Status Bar ===== */
+        .status-bar {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.6rem;
+            color: rgba(255,255,255,0.3);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .stat-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: rgba(255,255,255,0.8);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .stat-value.warn {
+            color: #ff6b35;
+        }
+
+        .stat-divider {
+            width: 1px;
+            height: 30px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        /* ===== Toast message ===== */
+        .toast {
+            position: fixed;
+            top: 130px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: rgba(20,20,30,0.9);
+            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,100,50,0.2);
+            color: rgba(255,255,255,0.8);
+            font-size: 0.85rem;
+            z-index: 20;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ===== Floating Particles ===== */
+        .ambient-particle {
+            position: fixed;
+            width: 2px;
+            height: 2px;
+            background: rgba(255,150,50,0.3);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 2;
+            animation: floatParticle linear infinite;
+        }
+
+        @keyframes floatParticle {
+            0% { transform: translateY(100vh) translateX(0); opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(-20px) translateX(var(--drift)); opacity: 0; }
+        }
+
+        /* ===== Finished Overlay ===== */
+        .finished-overlay {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            z-index: 50;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.8s ease;
+        }
+
+        .finished-overlay.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .finished-overlay .msg {
+            font-size: 2rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #ff6b35, #ffcc00);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .finished-overlay .sub-msg {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.9rem;
+        }
+
+        /* ===== Instruction hint ===== */
+        .hint {
+            position: fixed;
+            bottom: 120px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            color: rgba(255,255,255,0.2);
+            font-size: 0.7rem;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 2px;
+            text-align: center;
+        }
+
+        /* ===== Ash wobble on heavy ash ===== */
+        @keyframes ashWobble {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-0.5px); }
+            75% { transform: translateX(0.5px); }
+        }
+
+        .cigarette-ash.heavy {
+            animation: ashWobble 1.5s ease-in-out infinite;
+        }
+
+        /* ===== Shake animation ===== */
+        @keyframes cigaretteShake {
+            0% { transform: translateX(0) rotate(0deg); }
+            10% { transform: translateX(-8px) rotate(-4deg); }
+            20% { transform: translateX(6px) rotate(3deg); }
+            30% { transform: translateX(-5px) rotate(-2deg); }
+            40% { transform: translateX(4px) rotate(2deg); }
+            50% { transform: translateX(-3px) rotate(-1deg); }
+            60% { transform: translateX(2px) rotate(1deg); }
+            70% { transform: translateX(-1px) rotate(0deg); }
+            80% { transform: translateX(1px) rotate(0deg); }
+            100% { transform: translateX(0) rotate(0deg); }
+        }
+
+        .cigarette.shaking {
+            animation: cigaretteShake 0.5s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="ambient-bg"></div>
+    <div class="neon-border"></div>
+
+    <!-- Title -->
+    <div class="title-area">
+        <h1>🚬 사이버 흡연장</h1>
+    </div>
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="stat">
+            <div class="stat-label">흡연 횟수</div>
+            <div class="stat-value" id="puffCount">0</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+            <div class="stat-label">재 쌓임</div>
+            <div class="stat-value" id="ashLevel">0%</div>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat">
+            <div class="stat-label">남은 담배</div>
+            <div class="stat-value" id="burnLeft">100%</div>
+        </div>
+    </div>
+
+    <!-- Vertical Cigarette -->
+    <div class="cigarette-wrapper">
+        <div class="cigarette" id="cigarette">
+            <div class="cigarette-ember" id="ember"></div>
+            <div class="cigarette-ash" id="ash" style="min-height: 0px;"></div>
+            <div class="cigarette-burn-line" id="burnLine"></div>
+            <div class="cigarette-paper" id="paper" style="height: 200px;">
+                <div class="cigarette-brand-ring"></div>
+            </div>
+            <div class="cigarette-filter-line"></div>
+            <div class="cigarette-filter"></div>
+        </div>
+    </div>
+
+    <!-- Hint -->
+    <div class="hint">SPACE: 한 모금 &nbsp;|&nbsp; A: 재 털기 &nbsp;|&nbsp; R: 리셋</div>
+
+    <!-- Controls -->
+    <div class="controls">
+        <button class="btn btn-smoke" id="btnSmoke" onclick="puff()">🔥 한 모금</button>
+        <button class="btn btn-ash" id="btnAsh" onclick="flickAsh()">💨 재 털기</button>
+        <button class="btn btn-reset" id="btnReset" onclick="resetCigarette()">🔄 리셋</button>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Finished Overlay -->
+    <div class="finished-overlay" id="finishedOverlay">
+        <div class="msg">🚬 다 피웠습니다!</div>
+        <div class="sub-msg">새 담배를 피우시려면 리셋 버튼을 누르세요</div>
+        <button class="btn btn-smoke" onclick="resetCigarette()" style="margin-top:20px;">🔄 새 담배 피우기</button>
+    </div>
+
+    <!-- Canvases -->
+    <canvas id="smokeCanvas"></canvas>
+    <canvas id="ashCanvas"></canvas>
+
+    <script>
+        // ===== Configuration =====
+        const INITIAL_PAPER_HEIGHT = 200; // px
+        const MAX_ASH_HEIGHT = 60; // px - max ash before it auto-falls
+        const PAPER_BURN_PER_PUFF = 12; // px removed from paper per puff
+        const ASH_GROW_PER_PUFF = 10; // px of ash added per puff
+        const TOTAL_PUFFS = Math.floor(INITIAL_PAPER_HEIGHT / PAPER_BURN_PER_PUFF);
+
+        // ===== State =====
+        let puffCountValue = 0;
+        let currentPaperHeight = INITIAL_PAPER_HEIGHT;
+        let currentAshHeight = 0;
+        let isSmoking = false;
+        let isFinished = false;
+
+        // Particle arrays
+        let smokeParticles = [];
+        let ashFallParticles = [];
+        let emberSparks = [];
+        let ambientSmoke = [];
+
+        // ===== DOM =====
+        const smokeCanvas = document.getElementById('smokeCanvas');
+        const smokeCtx = smokeCanvas.getContext('2d');
+        const ashCanvas = document.getElementById('ashCanvas');
+        const ashCtx = ashCanvas.getContext('2d');
+        const cigaretteEl = document.getElementById('cigarette');
+        const emberEl = document.getElementById('ember');
+        const ashEl = document.getElementById('ash');
+        const paperEl = document.getElementById('paper');
+        const burnLineEl = document.getElementById('burnLine');
+        const finishedOverlay = document.getElementById('finishedOverlay');
+
+        // ===== Canvas Setup =====
+        function resizeCanvases() {
+            smokeCanvas.width = window.innerWidth;
+            smokeCanvas.height = window.innerHeight;
+            ashCanvas.width = window.innerWidth;
+            ashCanvas.height = window.innerHeight;
+        }
+        resizeCanvases();
+        window.addEventListener('resize', resizeCanvases);
+
+        // ===== Ambient Floating Particles =====
+        function createAmbientParticles() {
+            for (let i = 0; i < 12; i++) {
+                const p = document.createElement('div');
+                p.classList.add('ambient-particle');
+                p.style.left = Math.random() * 100 + '%';
+                p.style.setProperty('--drift', (Math.random() * 60 - 30) + 'px');
+                p.style.animationDuration = (8 + Math.random() * 12) + 's';
+                p.style.animationDelay = (Math.random() * 10) + 's';
+                p.style.width = (1 + Math.random() * 2) + 'px';
+                p.style.height = p.style.width;
+                document.body.appendChild(p);
+            }
+        }
+        createAmbientParticles();
+
+        // ===== Get Ember Position (top of cigarette) =====
+        function getEmberPosition() {
+            const rect = emberEl.getBoundingClientRect();
+            return {
+                x: rect.left + rect.width / 2,
+                y: rect.top
+            };
+        }
+
+        // ===== Get Ash Bottom Position =====
+        function getAshTipPosition() {
+            const rect = ashEl.getBoundingClientRect();
+            return {
+                x: rect.left + rect.width / 2,
+                y: rect.top + rect.height / 2
+            };
+        }
+
+        // ===== Smoke Particle =====
+        class SmokeParticle {
+            constructor(x, y, isAmbient = false) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = -(1.5 + Math.random() * 3);
+                this.size = isAmbient ? (5 + Math.random() * 10) : (12 + Math.random() * 28);
+                this.maxSize = this.size * (2.5 + Math.random() * 2);
+                this.life = 1;
+                this.decay = isAmbient ? (0.003 + Math.random() * 0.005) : (0.005 + Math.random() * 0.008);
+                this.opacity = isAmbient ? 0.08 : (0.12 + Math.random() * 0.15);
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.02;
+                this.turbulence = Math.random() * 0.6;
+                this.turbOffset = Math.random() * 1000;
+                this.isAmbient = isAmbient;
+            }
+
+            update() {
+                this.life -= this.decay;
+                this.x += this.vx + Math.sin(Date.now() * 0.001 + this.turbOffset) * this.turbulence;
+                this.y += this.vy;
+                this.vy *= 0.995;
+                this.vx *= 0.99;
+                this.size += (this.maxSize - this.size) * 0.02;
+                this.rotation += this.rotSpeed;
+                return this.life > 0;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.globalAlpha = this.opacity * this.life * this.life;
+
+                const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.size);
+                if (this.isAmbient) {
+                    gradient.addColorStop(0, 'rgba(180, 180, 190, 0.12)');
+                    gradient.addColorStop(0.5, 'rgba(150, 150, 165, 0.04)');
+                    gradient.addColorStop(1, 'rgba(120, 120, 140, 0)');
+                } else {
+                    gradient.addColorStop(0, 'rgba(200, 200, 210, 0.25)');
+                    gradient.addColorStop(0.3, 'rgba(170, 170, 185, 0.12)');
+                    gradient.addColorStop(0.7, 'rgba(140, 140, 160, 0.04)');
+                    gradient.addColorStop(1, 'rgba(120, 120, 140, 0)');
+                }
+
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, this.size, this.size * 0.7, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // ===== Ash Fall Particle (falling ash chunk) =====
+        class AshFallParticle {
+            constructor(x, y, size) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 5;
+                this.vy = 1 + Math.random() * 2;
+                this.size = size || (3 + Math.random() * 6);
+                this.width = this.size * (0.8 + Math.random() * 0.6);
+                this.height = this.size * (0.3 + Math.random() * 0.4);
+                this.life = 1;
+                this.decay = 0.006 + Math.random() * 0.01;
+                this.rotation = Math.random() * Math.PI * 2;
+                this.rotSpeed = (Math.random() - 0.5) * 0.15;
+                this.gravity = 0.12 + Math.random() * 0.06;
+                this.wobble = Math.random() * 2;
+                this.wobbleSpeed = 0.02 + Math.random() * 0.03;
+                this.wobbleOffset = Math.random() * 1000;
+                const grey = 110 + Math.random() * 60;
+                this.color = `rgb(${grey}, ${grey - 5}, ${grey - 10})`;
+                this.cracked = Math.random() > 0.5;
+            }
+
+            update() {
+                this.life -= this.decay;
+                this.vy += this.gravity;
+                this.x += this.vx + Math.sin(Date.now() * this.wobbleSpeed + this.wobbleOffset) * this.wobble * 0.1;
+                this.y += this.vy;
+                this.vx *= 0.985;
+                this.rotation += this.rotSpeed;
+                this.rotSpeed *= 0.995;
+                return this.life > 0 && this.y < window.innerHeight + 50;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation);
+                ctx.globalAlpha = this.life * 0.9;
+                
+                // Main ash chunk
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                // Irregular shape
+                ctx.moveTo(-this.width/2, -this.height/2);
+                ctx.lineTo(this.width/2 - 1, -this.height/2 + 1);
+                ctx.lineTo(this.width/2, this.height/2 - 1);
+                ctx.lineTo(-this.width/2 + 1, this.height/2);
+                ctx.closePath();
+                ctx.fill();
+
+                // Crack detail
+                if (this.cracked && this.size > 4) {
+                    ctx.strokeStyle = `rgba(60,60,60,0.3)`;
+                    ctx.lineWidth = 0.5;
+                    ctx.beginPath();
+                    ctx.moveTo(-this.width * 0.3, 0);
+                    ctx.lineTo(this.width * 0.2, -this.height * 0.2);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // ===== Ember Spark =====
+        class EmberSpark {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = -(1 + Math.random() * 4);
+                this.size = 1 + Math.random() * 2.5;
+                this.life = 1;
+                this.decay = 0.02 + Math.random() * 0.04;
+                this.gravity = 0.06;
+            }
+
+            update() {
+                this.life -= this.decay;
+                this.vy += this.gravity;
+                this.x += this.vx;
+                this.y += this.vy;
+                return this.life > 0;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = this.life;
+                const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
+                gradient.addColorStop(0, 'rgba(255, 200, 50, 1)');
+                gradient.addColorStop(0.5, 'rgba(255, 100, 20, 0.8)');
+                gradient.addColorStop(1, 'rgba(255, 50, 0, 0)');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        // ===== Small Ash Dust (tiny particles when ash breaks) =====
+        class AshDust {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 3;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.size = 0.5 + Math.random() * 1.5;
+                this.life = 1;
+                this.decay = 0.015 + Math.random() * 0.02;
+                this.gravity = 0.02;
+                const g = 140 + Math.random() * 60;
+                this.color = `rgba(${g},${g},${g},0.6)`;
+            }
+
+            update() {
+                this.life -= this.decay;
+                this.vy += this.gravity;
+                this.x += this.vx;
+                this.y += this.vy;
+                return this.life > 0;
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.globalAlpha = this.life * 0.7;
+                ctx.fillStyle = this.color;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        }
+
+        let ashDustParticles = [];
+
+        // ===== Update Cigarette Visual =====
+        function updateCigaretteVisual() {
+            // Paper height
+            paperEl.style.height = Math.max(0, currentPaperHeight) + 'px';
+
+            // Ash height
+            ashEl.style.minHeight = currentAshHeight + 'px';
+
+            // Heavy ash wobble
+            if (currentAshHeight > MAX_ASH_HEIGHT * 0.7) {
+                ashEl.classList.add('heavy');
+            } else {
+                ashEl.classList.remove('heavy');
+            }
+
+            // Hide burn line and ember when done
+            if (currentPaperHeight <= 0) {
+                burnLineEl.style.display = 'none';
+            }
+
+            // Update stats
+            const remaining = Math.round((currentPaperHeight / INITIAL_PAPER_HEIGHT) * 100);
+            document.getElementById('burnLeft').textContent = remaining + '%';
+            document.getElementById('burnLeft').className = remaining < 30 ? 'stat-value warn' : 'stat-value';
+
+            const ashPercent = Math.round((currentAshHeight / MAX_ASH_HEIGHT) * 100);
+            document.getElementById('ashLevel').textContent = ashPercent + '%';
+        }
+
+        // ===== Puff =====
+        let puffTimeout = null;
+        let ambientSmokeInterval = null;
+
+        function puff() {
+            if (isFinished || currentPaperHeight <= 0) return;
+
+            puffCountValue++;
+            document.getElementById('puffCount').textContent = puffCountValue;
+
+            // Burn paper
+            currentPaperHeight = Math.max(0, currentPaperHeight - PAPER_BURN_PER_PUFF);
+
+            // Grow ash
+            currentAshHeight = Math.min(MAX_ASH_HEIGHT, currentAshHeight + ASH_GROW_PER_PUFF);
+
+            updateCigaretteVisual();
+
+            // Ember glow
+            emberEl.classList.add('active');
+            document.getElementById('btnSmoke').classList.add('active');
+
+            // Spawn smoke from ember
+            const pos = getEmberPosition();
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    smokeParticles.push(new SmokeParticle(
+                        pos.x + (Math.random() - 0.5) * 12,
+                        pos.y - 5 + (Math.random() - 0.5) * 8
+                    ));
+                }, i * 60);
+            }
+
+            // Ember sparks
+            for (let i = 0; i < 4; i++) {
+                emberSparks.push(new EmberSpark(pos.x + (Math.random()-0.5)*10, pos.y));
+            }
+
+            // Toast
+            showToast(getSmokingMessage());
+
+            // After inhale, exhale
+            clearTimeout(puffTimeout);
+            puffTimeout = setTimeout(() => {
+                emberEl.classList.remove('active');
+                document.getElementById('btnSmoke').classList.remove('active');
+
+                // Big exhale cloud from center-ish
+                const centerX = window.innerWidth / 2;
+                const centerY = window.innerHeight / 2 - 100;
+                for (let i = 0; i < 12; i++) {
+                    setTimeout(() => {
+                        const p = new SmokeParticle(
+                            centerX + (Math.random() - 0.5) * 80,
+                            centerY + (Math.random() - 0.5) * 40
+                        );
+                        p.size *= 1.3;
+                        p.maxSize *= 1.3;
+                        p.opacity *= 1.1;
+                        p.vy *= 0.7;
+                        smokeParticles.push(p);
+                    }, i * 50);
+                }
+            }, 1000);
+
+            // Auto-drop ash if too heavy
+            if (currentAshHeight >= MAX_ASH_HEIGHT) {
+                setTimeout(() => {
+                    autoDropAsh();
+                }, 300);
+            }
+
+            // Ambient smoke
+            if (!ambientSmokeInterval) {
+                ambientSmokeInterval = setInterval(() => {
+                    if (isFinished) {
+                        clearInterval(ambientSmokeInterval);
+                        ambientSmokeInterval = null;
+                        return;
+                    }
+                    const ePos = getEmberPosition();
+                    ambientSmoke.push(new SmokeParticle(
+                        ePos.x + (Math.random() - 0.5) * 6,
+                        ePos.y - 3,
+                        true
+                    ));
+                }, 350);
+            }
+
+            // Check if finished
+            if (currentPaperHeight <= 0) {
+                isFinished = true;
+                setTimeout(() => {
+                    finishedOverlay.classList.add('show');
+                    clearInterval(ambientSmokeInterval);
+                    ambientSmokeInterval = null;
+                }, 2500);
+            }
+        }
+
+        // ===== Flick Ash =====
+        function flickAsh() {
+            if (currentAshHeight <= 0) {
+                showToast('털 재가 없습니다! 🤷');
+                return;
+            }
+
+            const ashPos = getAshTipPosition();
+            const ashHeight = currentAshHeight;
+
+            // Shake animation
+            cigaretteEl.classList.remove('shaking');
+            void cigaretteEl.offsetWidth; // reflow
+            cigaretteEl.classList.add('shaking');
+            setTimeout(() => cigaretteEl.classList.remove('shaking'), 600);
+
+            // Create falling ash chunks proportional to ash amount
+            const numChunks = Math.round(8 + (ashHeight / MAX_ASH_HEIGHT) * 20);
+            for (let i = 0; i < numChunks; i++) {
+                setTimeout(() => {
+                    const chunk = new AshFallParticle(
+                        ashPos.x + (Math.random() - 0.5) * 28,
+                        ashPos.y + (Math.random() - 0.5) * ashHeight * 0.6,
+                        2 + Math.random() * (ashHeight / 8)
+                    );
+                    ashFallParticles.push(chunk);
+                }, i * 15);
+            }
+
+            // Ash dust cloud
+            for (let i = 0; i < 15; i++) {
+                setTimeout(() => {
+                    ashDustParticles.push(new AshDust(
+                        ashPos.x + (Math.random() - 0.5) * 30,
+                        ashPos.y + (Math.random() - 0.5) * 10
+                    ));
+                }, i * 10);
+            }
+
+            // A couple ember sparks
+            for (let i = 0; i < 2; i++) {
+                const ePos = getEmberPosition();
+                emberSparks.push(new EmberSpark(ePos.x, ePos.y));
+            }
+
+            // Reset ash
+            currentAshHeight = 0;
+            updateCigaretteVisual();
+
+            showToast('재를 털었습니다! ✨');
+        }
+
+        // ===== Auto-drop ash (too heavy) =====
+        function autoDropAsh() {
+            if (currentAshHeight < MAX_ASH_HEIGHT * 0.8) return;
+
+            const ashPos = getAshTipPosition();
+            const dropHeight = currentAshHeight;
+
+            // Big chunks fall off
+            const numChunks = Math.round(15 + Math.random() * 10);
+            for (let i = 0; i < numChunks; i++) {
+                setTimeout(() => {
+                    const chunk = new AshFallParticle(
+                        ashPos.x + (Math.random() - 0.5) * 24,
+                        ashPos.y + (Math.random() - 0.5) * dropHeight * 0.5,
+                        3 + Math.random() * 7
+                    );
+                    chunk.vy = 0.5 + Math.random() * 1.5;
+                    chunk.vx = (Math.random() - 0.5) * 3;
+                    ashFallParticles.push(chunk);
+                }, i * 20);
+            }
+
+            // Dust
+            for (let i = 0; i < 10; i++) {
+                ashDustParticles.push(new AshDust(
+                    ashPos.x + (Math.random() - 0.5) * 20,
+                    ashPos.y
+                ));
+            }
+
+            // Keep a tiny bit of ash
+            currentAshHeight = 3;
+            updateCigaretteVisual();
+
+            showToast('재가 저절로 떨어졌습니다! 💨');
+        }
+
+        // ===== Reset =====
+        function resetCigarette() {
+            puffCountValue = 0;
+            currentPaperHeight = INITIAL_PAPER_HEIGHT;
+            currentAshHeight = 0;
+            isFinished = false;
+
+            document.getElementById('puffCount').textContent = '0';
+            updateCigaretteVisual();
+            burnLineEl.style.display = '';
+
+            emberEl.classList.remove('active');
+            document.getElementById('btnSmoke').classList.remove('active');
+            finishedOverlay.classList.remove('show');
+
+            smokeParticles = [];
+            ashFallParticles = [];
+            ambientSmoke = [];
+            emberSparks = [];
+            ashDustParticles = [];
+
+            if (ambientSmokeInterval) {
+                clearInterval(ambientSmokeInterval);
+                ambientSmokeInterval = null;
+            }
+
+            showToast('새 담배를 꺼냈습니다! 🚬');
+
+            // Flip animation
+            cigaretteEl.style.transition = 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+            cigaretteEl.style.transform = 'scale(0.8) rotateX(180deg)';
+            setTimeout(() => {
+                cigaretteEl.style.transform = 'scale(1) rotateX(0deg)';
+                setTimeout(() => {
+                    cigaretteEl.style.transition = '';
+                }, 500);
+            }, 100);
+        }
+
+        // ===== Toast =====
+        let toastTimeout = null;
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // ===== Messages =====
+        function getSmokingMessage() {
+            const msgs = [
+                '후... 한 모금 🌬️',
+                '깊이 들이마시는 중... 😌',
+                '연기가 퍼져나갑니다 💨',
+                '니코틴 충전 중... 🔋',
+                '스트레스가 날아갑니다 ✨',
+                '한 대의 여유... ☕',
+                '사이버 힐링 중 🧘',
+                '가상의 연기, 현실의 여유 🌙',
+                '디지털 한 모금 💻',
+                '마음이 편안해집니다 😮‍💨',
+                '후우우... 😶‍🌫️',
+                '연기 한 줄기... 🌫️',
+            ];
+            return msgs[Math.floor(Math.random() * msgs.length)];
+        }
+
+        // ===== Animation Loop =====
+        function animate() {
+            // Smoke canvas
+            smokeCtx.clearRect(0, 0, smokeCanvas.width, smokeCanvas.height);
+            smokeParticles = smokeParticles.filter(p => p.update());
+            smokeParticles.forEach(p => p.draw(smokeCtx));
+
+            ambientSmoke = ambientSmoke.filter(p => p.update());
+            ambientSmoke.forEach(p => p.draw(smokeCtx));
+
+            emberSparks = emberSparks.filter(p => p.update());
+            emberSparks.forEach(p => p.draw(smokeCtx));
+
+            // Ash canvas
+            ashCtx.clearRect(0, 0, ashCanvas.width, ashCanvas.height);
+            ashFallParticles = ashFallParticles.filter(p => p.update());
+            ashFallParticles.forEach(p => p.draw(ashCtx));
+
+            ashDustParticles = ashDustParticles.filter(p => p.update());
+            ashDustParticles.forEach(p => p.draw(ashCtx));
+
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // ===== Keyboard =====
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                puff();
+            } else if (e.code === 'KeyA') {
+                flickAsh();
+            } else if (e.code === 'KeyR') {
+                resetCigarette();
+            }
+        });
+
+        // Initialize
+        updateCigaretteVisual();
+    </script>
+</body>
+</html>
